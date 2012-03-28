@@ -1,8 +1,6 @@
 package implementations;
 
-import interfaces.ILocation;
-
-public class Location implements ILocation {
+public class Location {
 	private Integer city_id, region_id, country_id;
 	private long pop;
 	
@@ -11,7 +9,6 @@ public class Location implements ILocation {
 		pop = 0;
 	}
 	
-	@Override
 	public boolean setCountry(int countryid, long population) {
 		if (population < pop) return false;
 		country_id = countryid;
@@ -19,7 +16,6 @@ public class Location implements ILocation {
 		return true;
 	}
 
-	@Override
 	public boolean setRegion(int regionid, int countryid, long population) {
 		if (population < pop) return false;
 		region_id = regionid;
@@ -28,7 +24,6 @@ public class Location implements ILocation {
 		return true;
 	}
 
-	@Override
 	public boolean setCity(int cityid, int regionid, int countryid, long population) {
 		if (population < pop) return false;
 		city_id = cityid;
@@ -38,13 +33,11 @@ public class Location implements ILocation {
 		return true;
 	}
 
-	@Override
 	public long getPopulation() {
 		return pop;
 	}
 
-	@Override
-	public boolean merge(ILocation location) {
+	public boolean merge(Location location) {
 		if (location.getCountry() == null) return true;
 		if (country_id == null) country_id = location.getCountry();
 		else if (!location.getCountry().equals(country_id)) return false;
@@ -60,22 +53,18 @@ public class Location implements ILocation {
 		return true;
 	}
 
-	@Override
 	public Integer getCity() {
 		return city_id;
 	}
 
-	@Override
 	public Integer getRegion() {
 		return region_id;
 	}
 
-	@Override
 	public Integer getCountry() {
 		return country_id;
 	}
 
-	@Override
 	public boolean isEmpty() {
 		if (null == country_id && null == region_id && null == city_id)
 			return true;

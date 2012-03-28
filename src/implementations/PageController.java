@@ -6,18 +6,21 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
 import exceptions.RobotsNotAllowed;
 
 import lib.Log;
-import interfaces.IDomainController;
 import interfaces.IPageController;
+import interfaces.IPageScraper;
 
 public class PageController implements IPageController {
 	private String domain, path, file;
 	private URLConnection conn = null;
 	
-	public PageController(IDomainController domain, String path) throws RobotsNotAllowed {
+	public PageController(DomainController domain, String path) throws RobotsNotAllowed {
 		if (!domain.robotsAllowed(path)) throw new RobotsNotAllowed();
 		this.domain = domain.getDomain();
 		this.path = path;
@@ -74,7 +77,7 @@ public class PageController implements IPageController {
 			return true;			
 		
 		} catch (IOException e) {
-			Log.warn("Could not retrieve file: IO Error.");
+			Log.warn("Could not retrieve file: " + e.getMessage());
 			return false;
 		}
 	}
@@ -87,5 +90,41 @@ public class PageController implements IPageController {
 	@Override
 	public String getPath() {
 		return path;
+	}
+
+	@Override
+	public IPageScraper getScraper() {
+		if (domain.contains("youtube.com")) {
+			return new YoutubeScraper();
+		}
+		return new PageScraper();
+	}
+
+	@Override
+	public void finishScrape() {
+		Connection c = MySqlConnection.getConnection();
+		PreparedStatement st;
+		try {
+			st = c.prepareStatement("UPDATE links SET completed=NOW() WHERE domain=? AND path=?");
+			st.setString(1, domain);
+			st.setString(2, path);
+			st.execute();
+		} catch (SQLException e) {
+			Log.fatal("Could not mark link as complete: " + e.getMessage(), 2930);
+		}
+	}
+
+	@Override
+	public void startScrape() {
+		Connection c = MySqlConnection.getConnection();
+		PreparedStatement st;
+		try {
+			st = c.prepareStatement("UPDATE links SET started=NOW() WHERE domain=? AND path=?");
+			st.setString(1, domain);
+			st.setString(2, path);
+			st.execute();
+		} catch (SQLException e) {
+			Log.warn("Could not mark link as started: " + e.getMessage());
+		}
 	}
 }

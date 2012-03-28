@@ -3,13 +3,11 @@ package implementations;
 import java.util.ArrayList;
 
 import exceptions.RobotsNotAllowed;
-
-import interfaces.IDomainController;
 import interfaces.IPageController;
-import interfaces.IScrapeController;
+import interfaces.IPageScraper;
 
-public class ScrapeController implements IScrapeController {
-	IDomainController domain;
+public class ScrapeController {
+	DomainController domain;
 	ArrayList<String> paths;
 	
 	public ScrapeController(String domain) {
@@ -17,7 +15,6 @@ public class ScrapeController implements IScrapeController {
 		paths = new ArrayList<String>();
 	}
 
-	@Override
 	public void addPath(String path) {
 		paths.add(path);
 		scrape();
@@ -34,7 +31,8 @@ public class ScrapeController implements IScrapeController {
 		} catch (RobotsNotAllowed e) {
 			return false;
 		}
-		PageScraper scrape = new PageScraper(page);
+		IPageScraper scraper = page.getScraper();
+		scraper.scrape(page);
 		return true;
 	}
 }

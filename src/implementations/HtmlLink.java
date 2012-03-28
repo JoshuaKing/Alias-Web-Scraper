@@ -1,9 +1,8 @@
 package implementations;
 
-import interfaces.IHtmlLink;
 import interfaces.IPageController;
 
-public class HtmlLink implements IHtmlLink {
+public class HtmlLink {
 	String origin_domain, origin_path, href, content;
 	
 	public HtmlLink(IPageController page, String href, String content) {
@@ -13,17 +12,14 @@ public class HtmlLink implements IHtmlLink {
 		this.content = content;
 	}
 
-	@Override
 	public void setContent(String content) {
 		this.content = content;
 	}
 
-	@Override
 	public String getHref() {
 		return origin_domain + content;
 	}
 
-	@Override
 	public String getContent() {
 		return content;
 	}

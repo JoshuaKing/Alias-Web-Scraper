@@ -1,8 +1,6 @@
 package implementations;
 
-import interfaces.INationalityScore;
-
-public class NationalityScore implements INationalityScore {
+public class NationalityScore {
 	private int UK, US, AU;
 	
 	public NationalityScore() {
@@ -15,29 +13,25 @@ public class NationalityScore implements INationalityScore {
 		AU = au;
 	}
 
-	@Override
-	public void add(INationalityScore ns) {
+	public void add(NationalityScore ns) {
 		UK += ns.getUk();
 		US += ns.getUs();
 		AU += ns.getAu();
 	}
 
-	@Override
 	public int getUk() {
 		return UK;
 	}
 
-	@Override
 	public int getUs() {
 		return US;
 	}
 
-	@Override
 	public int getAu() {
 		return AU;
 	}
 
-	public static INationalityScore score(int uk, int us, int au) {
+	public static NationalityScore score(int uk, int us, int au) {
 		return new NationalityScore(uk, us, au);
 	}
 }

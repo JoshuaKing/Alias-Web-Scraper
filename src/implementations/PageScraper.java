@@ -11,25 +11,22 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import lib.Log;
-import interfaces.IAlias;
-import interfaces.IHtmlLink;
-import interfaces.ILocation;
-import interfaces.INationalityScore;
 import interfaces.IPageController;
 import interfaces.IPageScraper;
 
 public class PageScraper implements IPageScraper {
 	private IPageController page;
 	private String file, notags;
-	private ArrayList<IHtmlLink> links;
-	private ArrayList<IAlias> aliases;
-	public TreeMap<Integer, IAlias> alias_locations;
+	private ArrayList<HtmlLink> links;
+	private ArrayList<Alias> aliases;
+	public TreeMap<Integer, Alias> alias_locations;
 	
-	public PageScraper(IPageController page) {
+	@Override
+	public void scrape(IPageController page) {
 		this.page = page;
-		links = new ArrayList<IHtmlLink>();
-		aliases = new ArrayList<IAlias>();
-		alias_locations = new TreeMap<Integer, IAlias>();
+		links = new ArrayList<HtmlLink>();
+		aliases = new ArrayList<Alias>();
+		alias_locations = new TreeMap<Integer, Alias>();
 		try {
 			file = page.getFile();
 			notags = file.replaceAll("\n|\r", "").replaceAll("<!--.*?-->", " ");// "[SCRAPER:REMOVECOMMENT]");
@@ -72,9 +69,9 @@ public class PageScraper implements IPageScraper {
 		HashMap<Integer, String> keywords = ScrapeKeywords.getEmails(notags);
 		Set<Integer> keys = keywords.keySet();
 		for (Integer key : keys) {
-			Entry<Integer, IAlias> closest = alias_locations.floorEntry(key);
+			Entry<Integer, Alias> closest = alias_locations.floorEntry(key);
 			if (closest == null) continue;
-			IAlias alias =  closest.getValue();
+			Alias alias =  closest.getValue();
 			alias.setEmail(keywords.get(key));
 			l.append(" " + alias.getAlias() + "|" + alias.getEmail());
 		}
@@ -86,9 +83,9 @@ public class PageScraper implements IPageScraper {
 		HashMap<Integer, Integer> keywords = ScrapeKeywords.getAge(notags);
 		Set<Integer> keys = keywords.keySet();
 		for (Integer key : keys) {
-			Entry<Integer, IAlias> closest = alias_locations.floorEntry(key);
+			Entry<Integer, Alias> closest = alias_locations.floorEntry(key);
 			if (closest == null) continue;
-			IAlias alias =  closest.getValue();
+			Alias alias =  closest.getValue();
 			alias.setAge(keywords.get(key));
 			l.append(" " + alias.getAlias() + "|" + alias.getAge());
 		}
@@ -97,12 +94,12 @@ public class PageScraper implements IPageScraper {
 
 	private void scrapeGender() {
 		Log l = new Log("Scraping genders");
-		HashMap<Integer, IAlias.Gender> keywords = ScrapeKeywords.getGender(notags);
+		HashMap<Integer, Alias.Gender> keywords = ScrapeKeywords.getGender(notags);
 		Set<Integer> keys = keywords.keySet();
 		for (Integer key : keys) {
-			Entry<Integer, IAlias> closest = alias_locations.floorEntry(key);
+			Entry<Integer, Alias> closest = alias_locations.floorEntry(key);
 			if (closest == null) continue;
-			IAlias alias =  closest.getValue();
+			Alias alias =  closest.getValue();
 			alias.setGender(keywords.get(key));
 			l.append(" " + alias.getAlias() + "|" + alias.getGender());
 		}
@@ -111,12 +108,12 @@ public class PageScraper implements IPageScraper {
 
 	private void scrapeLocalisms() {
 		Log l = new Log("Scraping localisms");
-		HashMap<Integer, INationalityScore> keywords = ScrapeKeywords.getLocalisms(notags);
+		HashMap<Integer, NationalityScore> keywords = ScrapeKeywords.getLocalisms(notags);
 		Set<Integer> keys = keywords.keySet();
 		for (Integer key : keys) {
-			Entry<Integer, IAlias> closest = alias_locations.floorEntry(key);
+			Entry<Integer, Alias> closest = alias_locations.floorEntry(key);
 			if (closest == null) continue;
-			IAlias alias =  closest.getValue();
+			Alias alias =  closest.getValue();
 			alias.getNationality().add(keywords.get(key));
 			l.append(" " + alias.getAlias() + "|" + key);
 		}
@@ -125,12 +122,12 @@ public class PageScraper implements IPageScraper {
 	
 	private void scrapeLocation() {
 		Log l = new Log("Scraping locations");
-		HashMap<Integer, ILocation> locations = ScrapeKeywords.getLocation(notags);
+		HashMap<Integer, Location> locations = ScrapeKeywords.getLocation(notags);
 		Set<Integer> keys = locations.keySet();
 		for (Integer key : keys) {
-			Entry<Integer, IAlias> closest = alias_locations.floorEntry(key);
+			Entry<Integer, Alias> closest = alias_locations.floorEntry(key);
 			if (closest == null) continue;
-			IAlias alias =  closest.getValue();
+			Alias alias =  closest.getValue();
 			long pop = alias.getLocation().getPopulation();
 			if (pop > locations.get(key).getPopulation()) continue;
 			alias.setLocation(locations.get(key));
@@ -170,11 +167,11 @@ public class PageScraper implements IPageScraper {
 		}*/
 		
 		// Search for aliases by looking for promising links containing buzz words //
-		Iterator<IHtmlLink> it = links.iterator();
+		Iterator<HtmlLink> it = links.iterator();
 		Pattern contents_pattern = Pattern.compile("^([a-z0-9_-]*[a-z][a-z0-9_-]*)$", Pattern.CASE_INSENSITIVE);
 		Pattern href_pattern = Pattern.compile("[member|user|profile|/u[0-9]{3,7}|[member|profile].*[?].*u=[0-9]{3,7}]", Pattern.CASE_INSENSITIVE);
 		while (it.hasNext()) {
-			IHtmlLink h = it.next();
+		HtmlLink h = it.next();
 			Matcher match1 = href_pattern.matcher(h.getHref());
 			Matcher match2 = contents_pattern.matcher(h.getContent());
 			if (match1.find() && match2.find()) {
@@ -216,9 +213,9 @@ public class PageScraper implements IPageScraper {
 				
 		
 		Log l = new Log("Removing unlikely aliases");
-		Iterator<IAlias> it_alias = aliases.iterator();
+		Iterator<Alias> it_alias = aliases.iterator();
 		while (it_alias.hasNext()) {
-			IAlias a = it_alias.next();
+			Alias a = it_alias.next();
 			String alias = a.getAlias();
 			// which|date|the|you|share|like|login|next|help|home|email|main|
 			if (alias.matches("^(?i)[a-z]+ing|comment[s]?|signup|submit|cancel|permalink|previous|register|search|password|username|facebook|twitter$")) {
@@ -236,9 +233,9 @@ public class PageScraper implements IPageScraper {
 	
 	private void locateAliases() {
 		Log l = new Log("Locating aliases");
-		Iterator<IAlias> it = aliases.iterator();
+		Iterator<Alias> it = aliases.iterator();
 		while (it.hasNext()) {
-			IAlias a = it.next();
+			Alias a = it.next();
 			Matcher m = Pattern.compile("[^\\w_-](" + a.getAlias() + ")[^\\w_-]").matcher(notags);
 			while (m.find()) {
 				alias_locations.put(new Integer(m.start(1)), a);

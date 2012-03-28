@@ -11,9 +11,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import lib.Log;
-import interfaces.IDomainController;
 
-public class DomainController implements IDomainController {
+public class DomainController {
+	public static final String USER_AGENT = "User DCrawler";
 	private String domain;
 	private ArrayList<String> rules;
 	private URLConnection conn;
@@ -63,7 +63,10 @@ public class DomainController implements IDomainController {
 					}
 				}
 			}
-			Log.debug("Robots.txt file parsed. Rules: " + rules.size());
+			Log.info("Robots.txt file parsed. Rules: " + rules.size());
+			for (String rule : rules) {
+				Log.debug(" > " + rule);
+			}
 			return;
 		
 		} catch (IOException e) {
@@ -72,7 +75,6 @@ public class DomainController implements IDomainController {
 		}
 	}
 
-	@Override
 	public boolean robotsAllowed(String path) {
 		for (String regex : this.rules)
 			try {
@@ -87,11 +89,10 @@ public class DomainController implements IDomainController {
 				continue;
 			}
 		
-		Log.info("Robots allowed at " + domain + path);
+		Log.debug("Robots allowed at " + domain + path);
 		return true;
 	}
 
-	@Override
 	public String getDomain() {
 		return domain;
 	}

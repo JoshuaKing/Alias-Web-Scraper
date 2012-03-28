@@ -1,9 +1,5 @@
 package implementations;
 
-import interfaces.IAlias;
-import interfaces.ILocation;
-import interfaces.INationalityScore;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -16,9 +12,9 @@ import java.util.regex.Pattern;
 import lib.Log;
 
 public class ScrapeKeywords {
-	public static HashMap<Integer, INationalityScore> getLocalisms(String file) {
-		HashMap<Integer, INationalityScore> map = new HashMap<Integer, INationalityScore>();
-		Connection conn = MySqlConnection.connect();
+	public static HashMap<Integer, NationalityScore> getLocalisms(String file) {
+		HashMap<Integer, NationalityScore> map = new HashMap<Integer, NationalityScore>();
+		Connection conn = MySqlConnection.getConnection();
 		try {
 			Statement st = conn.createStatement();
 			ResultSet rs = st.executeQuery("SELECT * FROM localisms");
@@ -38,13 +34,13 @@ public class ScrapeKeywords {
 		return map;
 	}
 	
-	public static HashMap<Integer, ILocation> getLocation(String file) {
-		HashMap<Integer, ILocation> locations = new HashMap<Integer, ILocation>();
+	public static HashMap<Integer, Location> getLocation(String file) {
+		HashMap<Integer, Location> locations = new HashMap<Integer, Location>();
 		Log.debug("Searching for \"Location\" or \"from\"");
 		Pattern p = Pattern.compile("[^\\w.](location|from)\\W?[:]?\\W?\\|([^\\|]*)\\|", Pattern.CASE_INSENSITIVE);
 		Matcher m = p.matcher(file);
 		
-		Connection conn = MySqlConnection.connect();
+		Connection conn = MySqlConnection.getConnection();
 		while (m.find()) {
 			String substr = m.group(2).trim();
 			Log.debug("Searching near " + substr);
@@ -150,8 +146,8 @@ public class ScrapeKeywords {
 		return returnval;
 	}
 	
-	public static HashMap<Integer, IAlias.Gender> getGender(String file) {
-		HashMap<Integer, IAlias.Gender> genders = new HashMap<Integer, IAlias.Gender>();
+	public static HashMap<Integer, Alias.Gender> getGender(String file) {
+		HashMap<Integer, Alias.Gender> genders = new HashMap<Integer, Alias.Gender>();
 		
 		Log.debug("Searching for \"Gender\" or \"Sex\"");
 		Pattern p = Pattern.compile("gender|sex", Pattern.CASE_INSENSITIVE);
@@ -162,10 +158,10 @@ public class ScrapeKeywords {
 			
 			if (substr.matches("(?i).*\\Wfemale\\W.*")) {
 				Log.debug("Female");
-				genders.put(m.start(), IAlias.Gender.Female);
+				genders.put(m.start(), Alias.Gender.Female);
 			} else if (substr.matches("(?i).*\\Wmale\\W.*")) {
 				Log.debug("Male");
-				genders.put(m.start(), IAlias.Gender.Male);
+				genders.put(m.start(), Alias.Gender.Male);
 			}
 		}
 		

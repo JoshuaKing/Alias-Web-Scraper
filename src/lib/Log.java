@@ -2,6 +2,7 @@ package lib;
 
 public class Log {
 	private String log;
+	private static int LEVEL = 2;
 	
 	public Log() {
 		log = "";
@@ -16,15 +17,19 @@ public class Log {
 	}
 	
 	public static void debug(String s) {
+		if (LEVEL > 1) return;
 		System.out.printf("DEBUG:   %s\n", s);
 	}
 	public static void info(String s) {
+		if (LEVEL > 2) return;
 		System.out.printf("INFO:    %s\n", s);
 	}
 	public static void warn(String s) {
+		if (LEVEL > 3) return;
 		System.out.printf("WARNING: %s\n", s);
 	}
 	public static void fatal(String s, Integer c) {
+		if (LEVEL > 4) return;
 		System.out.printf("FATAL:   [%d] %s\n", c, s);
 		System.exit(c);
 	}
